@@ -1,0 +1,351 @@
+﻿<UserControl x:Class="WaterBalance.View.TableToFillControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:local="clr-namespace:WaterBalance.View"
+             xmlns:viewModel="clr-namespace:WaterBalance.ViewModels"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <Control.DataContext>
+        <viewModel:TableToFillViewModel />
+    </Control.DataContext>
+    
+    <UserControl.Resources>
+        <Style TargetType="{x:Type TextBlock}" x:Key="WrapText">
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        
+        <Style TargetType="{x:Type TextBox}" x:Key="TextBoxInCanvas">
+            <Setter Property="Width" Value="50" />
+            <Setter Property="Height" Value="20" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="Margin" Value="0 5 0 0" />
+            <Setter Property="IsReadOnly" Value="True" />
+        </Style>
+
+        <Style TargetType="{x:Type Button}" x:Key="ButtonStyle">
+            <Setter Property="Width" Value="63" />
+            <Setter Property="Height" Value="23" />
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="Margin" Value="5 5 0 0" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40" />
+            <RowDefinition MinHeight="150" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition MinHeight="100" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal">
+            <Button x:Name="addButton" 
+                    Command="{Binding AddConsumerToList}"
+                    Content="Добавить" 
+                    Style="{StaticResource ButtonStyle}" />
+
+            <Button x:Name="deleteButton" 
+                    Command="{Binding DeleteConsumerToList}"
+                    CommandParameter="{Binding ElementName=consumptionTypeList, Path=SelectedItem}"
+                    Content="Удалить" 
+                    Style="{StaticResource ButtonStyle}" />
+
+            <Button x:Name="deleteAllButton" 
+                    Command="{Binding DeleteAllConsumerToList}"
+                    Content="Очистить" 
+                    Style="{StaticResource ButtonStyle}" />
+
+            <Button x:Name="saveJsonDataButton" 
+                    Command="{Binding SaveJsonDataCommand}"
+                    Content="Сохранить" 
+                    Style="{StaticResource ButtonStyle}" />
+
+            <Button x:Name="openJsonDataButton" 
+                    Command="{Binding OpenJsonDataCommand}"
+                    Content="Открыть" 
+                    Style="{StaticResource ButtonStyle}" />
+
+            <Button x:Name="printButton" 
+                    Command="{Binding PrintData}"
+                    CommandParameter="{Binding ElementName=consumptionTypeList}"
+                    Content="Печать" 
+                    Style="{StaticResource ButtonStyle}" />
+        </StackPanel>
+
+        <DataGrid x:Name="consumptionTypeList" ItemsSource="{Binding ConsumptionList}"
+                  Grid.Row="1" Margin="3 0 3 3" 
+                  AutoGenerateColumns="False" IsReadOnly="True">
+            <DataGrid.Columns>                
+                <DataGridTextColumn Header="Водопотребитель" Binding="{Binding ConsumerName}" ElementStyle="{StaticResource WrapText}" />
+
+                <DataGridTemplateColumn x:Name="quantityPer24hColumn">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Label Content="Кол-во&#xA;в сутки" HorizontalAlignment="Center"/>
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <TextBox Text="{Binding Unit, UpdateSourceTrigger=PropertyChanged}">
+                                    <i:Interaction.Triggers>
+                                        <i:EventTrigger EventName="TextChanged">
+                                            <i:InvokeCommandAction
+                                                Command="{Binding DataContext.CalculateColdWater, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding ElementName=consumptionTypeList, Path=SelectedItem}" />
+                                        </i:EventTrigger>
+
+                                        <i:EventTrigger EventName="TextChanged">
+                                            <i:InvokeCommandAction
+                                                Command="{Binding DataContext.CalculateHotWater, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding ElementName=consumptionTypeList, Path=SelectedItem}" />
+                                        </i:EventTrigger>
+
+                                        <i:EventTrigger EventName="TextChanged">
+                                            <i:InvokeCommandAction
+                                                Command="{Binding DataContext.CalculateWastewaterCollection, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding ElementName=consumptionTypeList, Path=SelectedItem}" />
+                                        </i:EventTrigger>
+                                    </i:Interaction.Triggers>
+                                </TextBox>
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTextColumn Header="Ед.&#xA;измерения" Binding="{Binding UnitName}" ElementStyle="{StaticResource WrapText}" />
+
+                <DataGridTemplateColumn x:Name="coldWaterConsumptionColumn">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="25"/>
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="50"/>
+                                </Grid.ColumnDefinitions>
+                                <Label Content="Расход холодной воды" Grid.ColumnSpan="4" HorizontalAlignment="Center"/>
+                                <Label Content="Норма" Grid.Row="1" HorizontalAlignment="Center"/>
+                                <Label Content="Q сут,&#xA;м3/сут" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center"/>
+                                <Label Content="Q ч,&#xA;м3/ч" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center"/>
+                                <Label Content="q,&#xA;л/с" Grid.Row="1" Grid.Column="3" HorizontalAlignment="Center"/>
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="50"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Text="{Binding ConsumptionRatePerDay}" IsReadOnly="True">
+                                    <i:Interaction.Triggers>
+                                        <i:EventTrigger EventName="TextChanged">
+                                            <i:InvokeCommandAction
+                                                Command="{Binding DataContext.CalculateColdWater, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding ElementName=consumptionTypeList, Path=SelectedItem}" />
+                                        </i:EventTrigger>
+                                        
+                                        <i:EventTrigger EventName="TextChanged">
+                                            <i:InvokeCommandAction
+                                                Command="{Binding DataContext.CalculateWastewaterCollection, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding ElementName=consumptionTypeList, Path=SelectedItem}" />
+                                        </i:EventTrigger>
+                                    </i:Interaction.Triggers>
+                                </TextBox>
+                                <TextBox Grid.Column="1" Text="{Binding DailyUseColdWater.ConsumptionPerDayColdWater, StringFormat=N2}" />
+                                <TextBox Grid.Column="2" Text="{Binding DailyUseColdWater.ConsumptionPerHourColdWater, StringFormat=N2}" />
+                                <TextBox Grid.Column="3" Text="{Binding DailyUseColdWater.ConsumptionPerSecondColdWater, StringFormat=N4}" />
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn x:Name="hotWaterBoolCheckBox">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Label Content="Горячая&#xA;вода" HorizontalAlignment="Center"/>
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <CheckBox IsChecked="{Binding HotWaterBool}">
+                                    <i:Interaction.Triggers>
+                                        <i:EventTrigger EventName="Checked">
+                                            <i:InvokeCommandAction
+                                                Command="{Binding DataContext.HotWaterCheckBoxChecked, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding ElementName=consumptionTypeList, Path=SelectedItem}" />
+                                        </i:EventTrigger>
+
+                                        <i:EventTrigger EventName="Unchecked">
+                                            <i:InvokeCommandAction
+                                                Command="{Binding DataContext.HotWaterCheckBoxUnchecked, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding ElementName=consumptionTypeList, Path=SelectedItem}" />
+                                        </i:EventTrigger>                                        
+                                    </i:Interaction.Triggers>
+                                </CheckBox>
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn x:Name="hotWaterConsumptionColumn">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="25"/>
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="50"/>
+                                </Grid.ColumnDefinitions>
+                                <Label Content="Расход горячей воды" Grid.ColumnSpan="4" HorizontalAlignment="Center"/>
+                                <Label Content="Норма" Grid.Row="1" HorizontalAlignment="Center"/>
+                                <Label Content="Q сут,&#xA;м3/сут" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center"/>
+                                <Label Content="Q ч,&#xA;м3/ч" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center"/>
+                                <Label Content="q,&#xA;л/с" Grid.Row="1" Grid.Column="3" HorizontalAlignment="Center"/>
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="50"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Text="{Binding HotWaterConsumption, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True">
+                                    <i:Interaction.Triggers>
+                                        <i:EventTrigger EventName="TextChanged">
+                                            <i:InvokeCommandAction
+                                                Command="{Binding DataContext.CalculateHotWater, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding ElementName=consumptionTypeList, Path=SelectedItem}" />
+                                        </i:EventTrigger>
+                                    </i:Interaction.Triggers>
+                                </TextBox>
+                                <TextBox Grid.Column="1" Text="{Binding DailyUseHotWater.ConsumptionPerDayHotWater, StringFormat=N2}" />
+                                <TextBox Grid.Column="2" Text="{Binding DailyUseHotWater.ConsumptionPerHourHotWater, StringFormat=N2}" />
+                                <TextBox Grid.Column="3" Text="{Binding DailyUseHotWater.ConsumptionPerSecondHotWater, StringFormat=N4}" />
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn x:Name="WastewaterCollectionColumn">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="25"/>
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="50"/>
+                                </Grid.ColumnDefinitions>
+                                <Label Content="Водоотведение" Grid.ColumnSpan="4" HorizontalAlignment="Center"/>
+                                <Label Content="Норма" Grid.Row="1" HorizontalAlignment="Center"/>
+                                <Label Content="Q сут,&#xA;м3/сут" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center"/>
+                                <Label Content="Q ч,&#xA;м3/ч" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center"/>
+                                <Label Content="q,&#xA;л/с" Grid.Row="1" Grid.Column="3" HorizontalAlignment="Center"/>
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="50"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Text="{Binding WastewaterCollection, UpdateSourceTrigger=PropertyChanged}">
+                                    <i:Interaction.Triggers>
+                                        <i:EventTrigger EventName="TextChanged">
+                                            <i:InvokeCommandAction
+                                                Command="{Binding DataContext.CalculateWastewaterCollection, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding ElementName=consumptionTypeList, Path=SelectedItem}" />
+                                        </i:EventTrigger>
+                                    </i:Interaction.Triggers>
+                                </TextBox>
+                                <TextBox Grid.Column="1" Text="{Binding DailyWastewaterCollection.WastewaterCollectionPerDay, StringFormat=N2}" />
+                                <TextBox Grid.Column="2" Text="{Binding DailyWastewaterCollection.WastewaterCollectionPerHour, StringFormat=N2}" />
+                                <TextBox Grid.Column="3" Text="{Binding DailyWastewaterCollection.WastewaterCollectionPerSecond, StringFormat=N4}" />
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTextColumn Header="Нормативный&#xA;документ" Binding="{Binding NormativeDocument}" ElementStyle="{StaticResource WrapText}" />
+            </DataGrid.Columns>
+                                    
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Добавить" Command="{Binding AddConsumerToList}" />
+                    <MenuItem Header="Удалить" Command="{Binding DeleteConsumerToList}" 
+                              CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}},
+                              Path=PlacementTarget.SelectedItem}" />
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+        </DataGrid>
+
+        <GridSplitter Grid.Row="2" ShowsPreview="False" Height="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+
+        <Canvas Grid.Row="3">
+            <TextBlock Text="Расход холодной воды" Canvas.Left="65" />
+            <TextBlock Text="Q сут,&#xA;м3/сут" Canvas.Left="57" Canvas.Top="15" />
+            <TextBlock Text="Q ч,&#xA;м3/ч" Canvas.Left="115" Canvas.Top="15" />
+            <TextBlock Text="q,&#xA;л/с" Canvas.Left="177" Canvas.Top="15" />
+
+            <Label Content="Итого:" Canvas.Top="45" />
+            <TextBox Canvas.Left="50" Canvas.Top="45" Style="{StaticResource TextBoxInCanvas}" Text="{Binding SumConsumptionWaterAndWastewaterCollection.DailyUseColdWater.ConsumptionPerDayColdWater, StringFormat=N2}" />
+            <TextBox Canvas.Left="105" Canvas.Top="45" Style="{StaticResource TextBoxInCanvas}" Text="{Binding SumConsumptionWaterAndWastewaterCollection.DailyUseColdWater.ConsumptionPerHourColdWater, StringFormat=N2}" />
+            <TextBox Canvas.Left="160" Canvas.Top="45" Style="{StaticResource TextBoxInCanvas}" Text="{Binding SumConsumptionWaterAndWastewaterCollection.DailyUseColdWater.ConsumptionPerSecondColdWater, StringFormat=N2}" />
+
+            <TextBlock Text="Расход горячей воды" Canvas.Left="250" />
+            <TextBlock Text="Q сут,&#xA;м3/сут" Canvas.Left="237" Canvas.Top="15" />
+            <TextBlock Text="Q ч,&#xA;м3/ч" Canvas.Left="295" Canvas.Top="15" />
+            <TextBlock Text="q,&#xA;л/с" Canvas.Left="357" Canvas.Top="15" />
+
+            <TextBox Canvas.Left="230" Canvas.Top="45" Style="{StaticResource TextBoxInCanvas}" Text="{Binding SumConsumptionWaterAndWastewaterCollection.DailyUseHotWater.ConsumptionPerDayHotWater, StringFormat=N2}" />
+            <TextBox Canvas.Left="285" Canvas.Top="45" Style="{StaticResource TextBoxInCanvas}" Text="{Binding SumConsumptionWaterAndWastewaterCollection.DailyUseHotWater.ConsumptionPerHourHotWater, StringFormat=N2}" />
+            <TextBox Canvas.Left="340" Canvas.Top="45" Style="{StaticResource TextBoxInCanvas}" Text="{Binding SumConsumptionWaterAndWastewaterCollection.DailyUseHotWater.ConsumptionPerSecondHotWater, StringFormat=N2}" />
+
+            <TextBlock Text="Водоотведение" Canvas.Left="447" />
+            <TextBlock Text="Q сут,&#xA;м3/сут" Canvas.Left="417" Canvas.Top="15" />
+            <TextBlock Text="Q ч,&#xA;м3/ч" Canvas.Left="475" Canvas.Top="15" />
+            <TextBlock Text="q,&#xA;л/с" Canvas.Left="537" Canvas.Top="15" />
+
+            <TextBox Canvas.Left="410" Canvas.Top="45" Style="{StaticResource TextBoxInCanvas}" Text="{Binding SumConsumptionWaterAndWastewaterCollection.DailyWastewaterCollection.WastewaterCollectionPerDay, StringFormat=N2}" />
+            <TextBox Canvas.Left="465" Canvas.Top="45" Style="{StaticResource TextBoxInCanvas}" Text="{Binding SumConsumptionWaterAndWastewaterCollection.DailyWastewaterCollection.WastewaterCollectionPerHour, StringFormat=N2}" />
+            <TextBox Canvas.Left="520" Canvas.Top="45" Style="{StaticResource TextBoxInCanvas}" Text="{Binding SumConsumptionWaterAndWastewaterCollection.DailyWastewaterCollection.WastewaterCollectionPerSecond, StringFormat=N2}" />
+        </Canvas>
+    </Grid>
+</UserControl>

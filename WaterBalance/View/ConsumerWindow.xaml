@@ -1,0 +1,70 @@
+﻿<Window x:Class="WaterBalance.View.ConsumerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WaterBalance.View"
+        mc:Ignorable="d"
+        Title="Водопотребитель" Height="380" Width="350"
+        MinHeight="380" MinWidth="350">
+
+    <Window.Resources>
+        <Style TargetType="{x:Type TextBlock}" x:Key="TextBlockStyle">
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="5 0 0 0" />
+        </Style>
+
+        <Style TargetType="{x:Type TextBox}" x:Key="TextBoxStyle">
+            <Setter Property="Width" Value="200" />
+            <Setter Property="Height" Value="20" />
+        </Style>
+
+        <Style TargetType="{x:Type Button}" x:Key="ButtonStyle">
+            <Setter Property="Width" Value="63" />
+            <Setter Property="Height" Value="23" />
+            <Setter Property="Margin" Value="5" />
+        </Style>
+    </Window.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="125" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Text="Водопотребитель" Style="{StaticResource TextBlockStyle}" />
+        <TextBlock Text="Ед. измерения" Grid.Row="1" Style="{StaticResource TextBlockStyle}" />
+        <TextBlock Text="Количество" Grid.Row="2" Style="{StaticResource TextBlockStyle}" />
+        <TextBlock Text="Общий л/сутки" Grid.Row="3" Style="{StaticResource TextBlockStyle}" />
+        <TextBlock Text="В том числе горячей" Grid.Row="4" Style="{StaticResource TextBlockStyle}" />
+        <TextBlock Text="Водоотведение" Grid.Row="5" Style="{StaticResource TextBlockStyle}" />
+        <TextBlock Text="Продолжительность водоразбора" Grid.Row="6" Style="{StaticResource TextBlockStyle}" />
+        <TextBlock Text="Нормативный документ" Grid.Row="7" Style="{StaticResource TextBlockStyle}" />
+
+        <TextBox Text="{Binding ConsumerName}" Grid.Column="1" Style="{StaticResource TextBoxStyle}" />
+        <TextBox Text="{Binding UnitName}" Grid.Column="1" Grid.Row="1" Style="{StaticResource TextBoxStyle}" />
+        <TextBox Text="{Binding Unit}" Grid.Column="1" Grid.Row="2" Style="{StaticResource TextBoxStyle}" />
+        <TextBox Text="{Binding ConsumptionRatePerDay}" Grid.Column="1" Grid.Row="3" Style="{StaticResource TextBoxStyle}" />
+        <TextBox Text="{Binding HotWaterConsumption}" Grid.Column="1" Grid.Row="4" Style="{StaticResource TextBoxStyle}" />
+        <TextBox Text="{Binding WastewaterCollection}" Grid.Column="1" Grid.Row="5" Style="{StaticResource TextBoxStyle}" />
+        <TextBox Text="{Binding Duration}" Grid.Column="1" Grid.Row="6" Style="{StaticResource TextBoxStyle}" />
+        <TextBox Text="{Binding NormativeDocument}" Grid.Column="1" Grid.Row="7" Style="{StaticResource TextBoxStyle}" />
+
+        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Grid.Row="8" Grid.ColumnSpan="2">
+            <Button IsDefault="True" Click="AcceptClick" Content="Сохранить" Style="{StaticResource ButtonStyle}" />
+            <Button IsCancel="True" Content="Отмена" Style="{StaticResource ButtonStyle}" />
+        </StackPanel>
+    </Grid>
+</Window>
