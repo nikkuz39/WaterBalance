@@ -128,6 +128,23 @@ namespace WaterBalance.Services
 
                 index++;
             }
+
+            int lastIndex = index;
+
+            table.RowGroups[0].Rows.Add(new TableRow());
+            currentRow = table.RowGroups[0].Rows[lastIndex];
+            currentRow.Cells.Add(new TableCell(new Paragraph(new Run())));
+            table.RowGroups[0].Rows.Add(new TableRow());
+            currentRow = table.RowGroups[0].Rows[lastIndex + 1];
+            currentRow.Cells.Add(new TableCell(new Paragraph(new Run())));
+
+            table.RowGroups[0].Rows.Add(new TableRow());
+            currentRow = table.RowGroups[0].Rows[lastIndex + 2];
+
+            currentRow.FontSize = 14;
+            currentRow.Cells.Add(new TableCell(new Paragraph(new Run("Водопотребитель: ___________________________ ___________________________ ___________________________"))));
+            currentRow.Cells[0].ColumnSpan = 17; 
+
             return flowDoc;            
         }
 
